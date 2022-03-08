@@ -2,7 +2,29 @@ import { useState } from 'react'
 
 const Button = ({ onClick, text }) => <button onClick={onClick}>{text}</button>
 
-const Display = ({ text }) => <p>{text}</p>
+const Display = ({ heading, anecdote, votes }) => {
+  return (
+    <div>
+      <h1>{heading}</h1>
+      <p>{anecdote}</p>
+      <p>{votes}</p>
+    </div>
+  );
+}
+
+const DisplayMost = ({ heading, anecdote, votes }) => {
+  if (votes === 0) {
+    return <></>;
+  } else {
+    return (
+      <div>
+        <h1>{heading}</h1>
+        <p>{anecdote}</p>
+        <p>{votes}</p>
+      </div>
+    );
+  }
+}
 
 const App = () => {
   const anecdotes = [
@@ -29,12 +51,16 @@ const App = () => {
     setVotes(votesCopy);
   }
 
+  let mostVotes = Math.max(...votes)
+  let mostVotedAnecdote = votes.indexOf(mostVotes);
+
+  
   return (
     <div>
-      <Display text={anecdotes[selected]} />
-      <Display text={votes[selected]} />
+      <Display heading="Anecdote of the day" anecdote={anecdotes[selected]} votes={votes[selected]} />
       <Button onClick={nextAnecdote} text="next anecdote" />
       <Button onClick={increaseVote} text="vote" />
+      <DisplayMost heading="Anecdote with most votes" anecdote={anecdotes[mostVotedAnecdote]} votes={mostVotes} />
     </div>
   )
 }
