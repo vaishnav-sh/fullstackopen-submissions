@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
+import Countries from "./components/Countries"
 import Country from "./components/Country"
-import Weather from "./components/Weather"
 
 const App = () => {
   const [countries, setCountries] = useState([]);
@@ -28,24 +28,15 @@ const App = () => {
   return (
     <div>
       find countries <input value={newSearch} onChange={handleNewSearch} />
-      {filteredResults.length >= 10 ? <p>Too many matches, specify another filter</p> :
-        filteredResults.length === 1 ? filteredResults.map(result => {
-          return (
-            <div key={result.name.common}>
-              <Country name={result.name.common} capital={result.capital[0]} area={result.area} languages={result.languages} flag={result.flags.png} />
-              <Weather city={result.capital[0]} />
-            </div>
-          );
-        }) : filteredResults.map(result => {
-          return (
-            <div key={result.name.common}>
-              <span>{result.name.common}</span>
-              <button onClick={handleShow}>show</button>
-            </div>
-          )
-        })}
+      {filteredResults.length >= 10 ? (
+        <p>Too many matches, specify another filter</p>
+      ) : filteredResults.length === 1 ? (
+        <Country data={filteredResults[0]} />
+      ) : (
+        <Countries countries={filteredResults} handleShow={handleShow} />
+      )}
     </div>
-  )
+  );
 }
 
 export default App

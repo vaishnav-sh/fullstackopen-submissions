@@ -6,24 +6,15 @@ const Weather = ({ city }) => {
     const apikey = process.env.REACT_APP_API_KEY;
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.split(" ").join("+")}&appid=${apikey}&units=metric`;
 
-    const fetchWeather = async () => {
-        try {
-            const response = await axios.get(url);
-            const data = response.data;
-            setWeather(data);
-        } catch (error) {
-            console.log(error.message);
-        }
-    }
-
     useEffect(() => {
-        fetchWeather();
-    }, [])
+        axios.get(url).then(response => setWeather(response.data))
+        .catch(e => console.log(e.message))
+        // fetchWeather();
+    }, [url])
 
 
     if (weather.main) {
         const imgsrc = `http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
-        console.log(weather);
         return (
             <div>
                 <h2>Weather in {city}</h2>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import Filter from './components/Filter'
+import {getAll, createPerson, updatePerson, deletePerson} from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,13 +10,8 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('');
 
-  const fetchPersons = async() => {
-    const {data} = await axios.get("http://localhost:3001/persons")
-    return setPersons(data)
-  }
-
   useEffect(() => {
-    fetchPersons();
+    getAll().then(data => setPersons(data))
   }, [])
 
   const addPerson = (event) => {
@@ -31,19 +26,16 @@ const App = () => {
     if(nameAlreadyThere) {
       if (window.confirm(`${newName} already added to the phonebook, replace the old number with a new one?`)) {
         const id = persons.find(person => person.name.toLowerCase() === newName.toLowerCase()).id;
-        axios.put(`http://localhost:3001/persons/${id}`, newNameObj)
-        .then(response => {
-          fetchPersons()
-          setNewNumber("")
+        updatePerson(id, newNameObj).then(returnedPerson => {
+          setPersons(persons.map(person => (person.id !== id ? person : returnedPerson)))
           setNewName("");
+          setNewNumber("");
         })
         .catch(e => `Something went wrong: ${e.message}`)
       }
     } else {
-      axios
-        .post("http://localhost:3001/persons", newNameObj)
-        .then((response) => {
-          fetchPersons();
+        createPerson(newNameObj).then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson));
           setNewName("");
           setNewNumber("");
         })
@@ -54,34 +46,30 @@ const App = () => {
   const filteredPersons = newFilter ? persons.filter(person => person.name.toLowerCase().includes(newFilter.toLowerCase())) : persons;
 
   const handleNameChange = (event) => {
-    setNewName(event.target.value)
+    setNewName(event.target.value);
   }
 
   const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
+    setNewNumber(event.target.value);
   }
 
   const handleFilter = (event) => {
-    setNewFilter(event.target.value)
+    setNewFilter(event.target.value);
   }
   
-  const handleDelete = (event) => {
-    const deletePersonName = event.target.parentElement.innerText.split(" ")[0];
-    if(window.confirm(`Delete ${deletePersonName}'s Contact`)) {
-      const id = persons.find(person => person.name.startsWith(deletePersonName)).id;
-      axios.delete(`http://localhost:3001/persons/${id}`)
-      .then(response => fetchPersons())
+  const handleDelete = (id, name) => {
+    if(window.confirm(`Delete ${name}'s Contact`)) {
+      deletePerson(id).then(returnedPerson => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
       .catch(e => console.log(`Something went wrong: ${e.message}`))
     }
   }
 
   return (
     <div>
-      <h2>Phonebook</h2>
       <Filter value={newFilter} onChange={handleFilter} text="filter shown with" />
-      <h2>add new</h2>
       <PersonForm onSubmit={addPerson} newName={newName} nameChange={handleNameChange} newNumber={newNumber} numChange={handleNumberChange} />
-      <h3>Numbers</h3>
       <Persons persons={filteredPersons} personDelete={handleDelete}/>
     </div>
   )
